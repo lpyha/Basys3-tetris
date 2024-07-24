@@ -28,7 +28,14 @@ module video(
     // generate VGA video timing
     wire VtcVde;
     wire [10:0] VtcHCnt, VtcVCnt;
-    VGAtiming VGAtiming(CLK25M,BTN[0],VtcVde,VGA_HS,VGA_VS,VtcHCnt,VtcVCnt);
+    VGAtiming VGAtiming(
+        CLK25M,BTN[0],
+        VtcVde,
+        VGA_HS,
+        VGA_VS,
+        VtcHCnt,
+        VtcVCnt
+    );
     assign VGA_RED   = VtcVde==0 ? 0:Red[7:4];
     assign VGA_GREEN = VtcVde==0 ? 0:Green[7:4];
     assign VGA_BLUE  = VtcVde==0 ? 0:Blue[7:4];
@@ -37,7 +44,7 @@ module video(
     wire [7:0] Red,Green,Blue;
     color color(
         .CLK25M(CLK25M),
-        .Reset(BTN[0]),
+        .Reset(BTN[4]),
         .Hcount(VtcHCnt[9:0]),
         .Vcount(VtcVCnt[8:0]),
         .Red(Red),
