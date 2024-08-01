@@ -2,7 +2,7 @@
 
 module video(
         input CLK100M,               // 100MHz clock input
-        input [4:0] BTN,             // Button 
+        input [4:0] BTN,             // Button (top, left, right, bottom, center)
         input [3:0] SW,              // Switch (SW3,SW2,SW1,SW0)
         output [4:0] LED,            // LED    (LD3,LD2,LD1,LD0)
         output [3:0] VGA_RED,
@@ -44,7 +44,7 @@ module video(
     wire [7:0] Red,Green,Blue;
     color color(
         .CLK25M(CLK25M),
-        .Reset(BTN[4]),
+        .buttonT(BTN[0]),
         .Hcount(VtcHCnt[9:0]),
         .Vcount(VtcVCnt[8:0]),
         .Red(Red),

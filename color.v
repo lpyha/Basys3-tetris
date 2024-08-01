@@ -1,6 +1,6 @@
 module color(
     input CLK25M,  // 25MHz clock input
-    input Reset, 
+    input buttonT, 
     input [9:0] Hcount, 
     input [8:0] Vcount, 
     output [7:0] Red, 
@@ -19,7 +19,6 @@ module color(
     localparam BOTTOM_BORDER    = 16'b1111_1111_1111_1111;
     // initial block position
     localparam INITIAL_BLOCK    = 48'b0000_0000_0010_0000_0000_0000_0000_0000_0000_0000_0000_0000;
-    // block2
     localparam BLOCK2           = 48'b0000_0000_0011_1000_0000_0000_0000_0000_0000_0000_0000_0000;
     localparam BLOCK3           = 48'b0000_0000_0010_0000_0000_0000_0010_0000_0000_0000_0000_0000;
     localparam BLOCK4           = 48'b0000_0000_0010_0000_0000_0000_0010_0000_0000_0000_0010_0000;
@@ -38,12 +37,12 @@ module color(
                                         | (BOTTOM_BORDER<<112);
     reg     [127:0] block = INITIAL_BLOCK;
     wire    [6:0]   pos;
-    reg     [2:0]   posY = 0;
     wire            clk10;
     reg     [3:0]   clkCount = 0;  // make 1Hz clock from 10Hz clock
     reg             debugFlag;
     reg     [3:0]   score = 0;
     reg     [3:0]   blockIndex = 1;
+    wire            reset = buttonT;
 
     clockDivider10Hz clk_divider10Hz(
         .CLK25M(CLK25M),
@@ -74,14 +73,8 @@ module color(
             if (underBlockExists(block)) begin
                 background = background | block;
                 block = changeInitialBlock(blockIndex);
-                posY = 0;
-            end else if (posY < 5) begin
-                block = block << 16;
-                posY = posY + 1;
             end else begin
-                background = background | block;
-                block = changeInitialBlock(blockIndex);
-                posY = 0;
+                block = block << 16;
             end
             clkCount = 0;
         end else begin
@@ -93,11 +86,15 @@ module color(
 
         // blink the debug LED
         debugFlag = ~debugFlag;
-        if (score == 2) begin
+        if (reset == 1) begin
             resetBlock(block);
         end
     end
 
+    /**
+     * @brief Reset block and background
+     * @param block 3x3 128bit
+     */
     function resetBlock;
         input [127:0] block;
         begin
@@ -183,31 +180,31 @@ module color(
         begin
             if (background[111:96] == FILL_BLOCK_H) begin
                 background[111:96] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[95:80] == FILL_BLOCK_H) begin
                 background[95:80] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[79:64] == FILL_BLOCK_H) begin
                 background[79:64] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[63:48] == FILL_BLOCK_H) begin
                 background[63:48] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[47:32] == FILL_BLOCK_H) begin
                 background[47:32] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[31:16] == FILL_BLOCK_H) begin
                 background[31:16] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end else if (background[15:0] == FILL_BLOCK_H) begin
                 background[15:0] = BORDER;
-                background = background << 16 | BORDER;
+                background = background << 16 | BORDER | (BOTTOM_BORDER<<112);
                 score = score + 1;
             end
             blockFilled = background;
@@ -279,7 +276,7 @@ module clockDivider10Hz(
 endmodule
 
 /*
- * BCD to 7-segment decoder
+ * @ breif BCD to 7-segment decoder
  */
 
 module bcd7seg (
